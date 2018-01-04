@@ -1,0 +1,141 @@
+#include <IRremote.h>
+#include <Servo.h> 
+int RECV_PIN = 10;   //红外线接收器OUTPUT端接在pin 10
+IRrecv irrecv(RECV_PIN);//定义IRrecv对象来接收红外线信号
+Servo myservo; 
+decode_results results;   //解码结果放在decode_results构造的对象results里
+int pos1 = 60;
+int pos2 =110;
+void setup(){
+  Serial.begin(9600);
+  myservo.attach(9);
+  irrecv.enableIRIn(); // 启动红外解码
+}
+void loop() {
+  myservo.write(pos1);
+  if (irrecv.decode(&results)) {      //解码成功，收到一组红外线信号
+    
+    myservo.write(pos2);
+    delay(3000);
+    irrecv.resume(); //  接收下一个值
+  }
+}
+
+
+***************分*********割********线**************************************************************
+
+
+
+#include <Servo.h> 
+#include<IRremote.h>
+int proximitySensor = 7;
+const int TrigPin = 4; //发送超声波
+const int EchoPin = 5; //接收超声波
+float cm;
+IRsend irsend;
+Servo myservo;  // 电机控制初始化
+ 
+int pos = 0;    
+ 
+void setup() 
+{ 
+  Serial.begin(115200);
+  pinMode(TrigPin, OUTPUT);
+  pinMode(EchoPin, INPUT);
+  pinMode(proximitySensor, INPUT);
+  myservo.attach(9);  // attaches the servo on pin 9 to the servo object 
+} 
+ 
+ 
+void loop() 
+{ 
+  int value = digitalRead(proximitySensor);
+  // 产生一个10us的高电平脉冲去触发TrigPin
+digitalWrite(TrigPin, LOW);
+delayMicroseconds(2);
+digitalWrite(TrigPin, HIGH);
+delayMicroseconds(10);
+digitalWrite(TrigPin, LOW);
+// 检测脉冲宽度，并计算出距离
+cm = pulseIn(EchoPin, HIGH);   //红外测距获得距离
+if(cm<7000&&cm>6100)          //判断，处于正常状态时关灯位置
+ { myservo.write(125);
+  irsend.sendNEC(0x234906F,32);}
+else                         //若为正常区间外，通过舵机控制开灯，同时发出红外信号
+ {myservo.write(90);
+ irsend.sendNEC(0x234906F,32);
+ //delay(10000);
+ }
+//通过串口监视器输出
+Serial.print("Distance:"); Serial.println(cm);
+delay(1000);
+
+  }
+
+
+
+
+
+
+
+
+************************分****************割***********************************************
+
+
+
+
+
+
+
+#include <dht11.h>
+
+#include <Wire.h> 
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(12, 10, 9, 8, 7, 6);
+
+dht11 DHT11;
+
+const byte dataPin = 2;
+
+void setup() 
+{
+  
+lcd.begin(16, 2);       // 初始化 LCD
+
+}
+
+void loop() 
+{
+  int chk = DHT11.read(dataPin);
+  //if (chk == 0)
+    
+lcd.setCursor(4, 0);
+    
+lcd.print("Temp");
+    
+lcd.setCursor(0, 1);
+    
+lcd.print("Humidity");
+    
+lcd.setCursor(9, 0);   // 顯示溫度
+    
+lcd.print((float)DHT11.temperature, 2);
+    
+lcd.print((char) 0xDF);
+    lcd.print("C");
+    
+lcd.setCursor(9, 1);   // 顯示濕度
+   
+ lcd.print((float)DHT11.humidity, 2);
+    
+lcd.print("%");
+    
+delay(1000);  
+    
+}
+
+
+
+
